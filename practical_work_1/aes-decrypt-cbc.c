@@ -8,26 +8,26 @@
 
 typedef unsigned char BYTE;
 
-void aes_encrypt(BYTE *cipher, BYTE *message, BYTE *key);
+void aes_decrypt(BYTE *cipher, BYTE *message, BYTE *key);
 
 const char iv[16] = "profclavierM202a";
 char xor_key[16];
 
-void aes_encrypt_cbc_init()
+void aes_decrypt_cbc_init()
 {
     memcpy(xor_key, iv, 16);
 }
 
-void aes_encrypt_cbc(BYTE *cipher, BYTE *message, BYTE *key)
+void aes_decrypt_cbc(BYTE *message, BYTE *cipher, BYTE *key)
 {
     BYTE xor_mess[16];
-    //new message = message XOR key
+    // Decrypted with new message
+    aes_decrypt(xor_mess, cipher, key);
+    //New message = message XOR key
     for (int i = 0; i < 16; i++)
     {
-        xor_mess[i] = message[i] ^ xor_key[i];
+        message[i] = xor_mess[i] ^ xor_key[i];
     }
-    // Encrypted with new message
-    aes_encrypt(cipher, xor_mess, key);
     // Save new message encrypted into xor_key
     memcpy(xor_key, cipher, 16);
 }
@@ -62,7 +62,7 @@ int main(int argc, char const *argv[])
         return -1;
     }
 
-    aes_encrypt_cbc_init();
+    aes_decrypt_cbc_init();
 
     while (1)
     {
@@ -72,12 +72,12 @@ int main(int argc, char const *argv[])
         {
             break;
         }
-        aes_encrypt_cbc(buffer_enc, buffer, K);
+        aes_decrypt_cbc(buffer_enc, buffer, K);
         fwrite(buffer_enc, 1, 16, output);
     }
 
     fclose(input);
     fclose(output);
-    printf("Sucessful encrypted!\n");
+    printf("Sucessful decrypted!\n");
     return 0;
 }

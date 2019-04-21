@@ -5,12 +5,12 @@
 #define ENCRYPT 1
 #define DECRYPT 2
 
-#define MULT_2(x) (  xtime(x)  )
-#define MULT_3(x) (  xtime(x) ^ (x)  )
-#define MULT_9(x) (  xtime(xtime(xtime(x))) ^ (x)  )
-#define MULT_B(x) (  xtime(xtime(xtime(x)) ^ (x)) ^ (x)  )
-#define MULT_D(x) (  xtime(xtime(xtime(x) ^ (x))) ^ (x)  )
-#define MULT_E(x) (  xtime(xtime(xtime(x) ^ (x)) ^ (x))  )
+#define MULT_2(x) (xtime(x))
+#define MULT_3(x) (xtime(x) ^ (x))
+#define MULT_9(x) (xtime(xtime(xtime(x))) ^ (x))
+#define MULT_B(x) (xtime(xtime(xtime(x)) ^ (x)) ^ (x))
+#define MULT_D(x) (xtime(xtime(xtime(x) ^ (x))) ^ (x))
+#define MULT_E(x) (xtime(xtime(xtime(x) ^ (x)) ^ (x)))
 
 typedef unsigned char BYTE;
 
@@ -20,94 +20,91 @@ BYTE inv_sbox[256] = {82, 9, 106, 213, 48, 54, 165, 56, 191, 64, 163, 158, 129, 
 
 BYTE rcon[11] = {0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36};
 
-void aes_encrypt(BYTE* cipher, BYTE* message, BYTE* key);
-void aes_decrypt(BYTE* message, BYTE* cipher, BYTE* key);
-void key_schedule(BYTE* expanded_key, BYTE* key);
-void add_round_key(BYTE* state, BYTE* round_key);
-void sub_bytes(BYTE* state, unsigned int mode);
-void shift_rows(BYTE* state, unsigned int mode);
-void mix_columns(BYTE* state, unsigned int mode);
+void aes_encrypt(BYTE *cipher, BYTE *message, BYTE *key);
+void aes_decrypt(BYTE *message, BYTE *cipher, BYTE *key);
+void key_schedule(BYTE *expanded_key, BYTE *key);
+void add_round_key(BYTE *state, BYTE *round_key);
+void sub_bytes(BYTE *state, unsigned int mode);
+void shift_rows(BYTE *state, unsigned int mode);
+void mix_columns(BYTE *state, unsigned int mode);
 BYTE xtime(BYTE);
-void display_state(BYTE* state, char *label);
+void display_state(BYTE *state, char *label);
 
 /***************************************************************/
 
-void aes_encrypt(BYTE* cipher, BYTE* message, BYTE* key)
+void aes_encrypt(BYTE *cipher, BYTE *message, BYTE *key)
 {
   BYTE expanded_key[176];
   BYTE *p_round_key;
   BYTE state[176];
-  
+
   unsigned int n0_round;
-  
 
   memcpy(state, message, 16);
-  
+
   key_schedule(expanded_key, key);
 
   p_round_key = expanded_key;
   add_round_key(state, p_round_key);
-  
+
   for (n0_round = 1; n0_round <= 10; n0_round++)
   {
     sub_bytes(state, ENCRYPT);
-    
-    shift_rows(state, ENCRYPT);    
-    
+
+    shift_rows(state, ENCRYPT);
+
     if (n0_round < 10)
     {
       mix_columns(state, ENCRYPT);
     }
-      
+
     p_round_key += 16;
     add_round_key(state, p_round_key);
   }
-  
+
   memcpy(cipher, state, 16);
 }
 
 /***************************************************************/
 
-void aes_decrypt(BYTE* message, BYTE* cipher, BYTE* key)
+void aes_decrypt(BYTE *message, BYTE *cipher, BYTE *key)
 {
   BYTE expanded_key[176];
   BYTE *p_round_key;
   BYTE state[176];
-  
+
   unsigned int n0_round;
-  
 
   memcpy(state, cipher, 16);
-  
+
   key_schedule(expanded_key, key);
 
   p_round_key = &(expanded_key[160]);
   add_round_key(state, p_round_key);
-  
+
   for (n0_round = 1; n0_round <= 10; n0_round++)
   {
     shift_rows(state, DECRYPT);
-    
+
     sub_bytes(state, DECRYPT);
 
     p_round_key -= 16;
-    add_round_key(state, p_round_key);    
-      
+    add_round_key(state, p_round_key);
+
     if (n0_round < 10)
     {
       mix_columns(state, DECRYPT);
     }
   }
-  
+
   memcpy(message, state, 16);
 }
 
 /***************************************************************/
 
-void key_schedule(BYTE* expanded_key, BYTE* key)
+void key_schedule(BYTE *expanded_key, BYTE *key)
 {
   unsigned int i;
-
 
   for (i = 0; i < 176; i++)
   {
@@ -115,28 +112,27 @@ void key_schedule(BYTE* expanded_key, BYTE* key)
       expanded_key[i] = key[i];
     else
     {
-      if ((i/4) % 4 == 0)
+      if ((i / 4) % 4 == 0)
       {
         if ((i % 16) == 0)
-          expanded_key[i] = sbox[expanded_key[4*(i/4-1)+((i+1)%4)]] ^ rcon[i/16] ^ expanded_key[i-16];
+          expanded_key[i] = sbox[expanded_key[4 * (i / 4 - 1) + ((i + 1) % 4)]] ^ rcon[i / 16] ^ expanded_key[i - 16];
         else
-          expanded_key[i] = sbox[expanded_key[4*(i/4-1)+((i+1)%4)]] ^ expanded_key[i-16];
+          expanded_key[i] = sbox[expanded_key[4 * (i / 4 - 1) + ((i + 1) % 4)]] ^ expanded_key[i - 16];
       }
       else
       {
-        expanded_key[i] = expanded_key[i-4] ^ expanded_key[i-16];
+        expanded_key[i] = expanded_key[i - 4] ^ expanded_key[i - 16];
       }
-    }    
+    }
   }
 }
 
 /***************************************************************/
 
-void add_round_key(BYTE* state, BYTE* round_key)
+void add_round_key(BYTE *state, BYTE *round_key)
 {
   unsigned int n0_byte;
-  
-  
+
   for (n0_byte = 0; n0_byte < 16; n0_byte++)
   {
     state[n0_byte] = state[n0_byte] ^ round_key[n0_byte];
@@ -145,10 +141,9 @@ void add_round_key(BYTE* state, BYTE* round_key)
 
 /***************************************************************/
 
-void sub_bytes(BYTE* state, unsigned int mode)
+void sub_bytes(BYTE *state, unsigned int mode)
 {
   unsigned int n0_byte;
-  
 
   if (mode == ENCRYPT)
   {
@@ -163,15 +158,14 @@ void sub_bytes(BYTE* state, unsigned int mode)
     {
       state[n0_byte] = inv_sbox[state[n0_byte]];
     }
-  }  
+  }
 }
 
 /***************************************************************/
 
-void shift_rows(BYTE* state, unsigned int mode)
+void shift_rows(BYTE *state, unsigned int mode)
 {
   BYTE temp;
-  
 
   // Row 1
   if (mode == ENCRYPT)
@@ -190,7 +184,6 @@ void shift_rows(BYTE* state, unsigned int mode)
     state[9] = state[5];
     state[5] = temp;
   }
-  
 
   // Row 2
   temp = state[2];
@@ -221,13 +214,12 @@ void shift_rows(BYTE* state, unsigned int mode)
 
 /***************************************************************/
 
-void mix_columns(BYTE* state, unsigned int mode)
+void mix_columns(BYTE *state, unsigned int mode)
 {
   BYTE *p_state;
   BYTE out[4];
 
   unsigned int i, j;
-  
 
   if (mode == ENCRYPT)
   {
@@ -239,7 +231,7 @@ void mix_columns(BYTE* state, unsigned int mode)
         out[i] = MULT_2(p_state[(0 + i) % 4]) ^ MULT_3(p_state[(1 + i) % 4]) ^ p_state[(2 + i) % 4] ^ p_state[(3 + i) % 4];
       }
       memcpy(p_state, out, 4);
-      p_state += 4; 
+      p_state += 4;
     }
   }
   else
@@ -252,7 +244,7 @@ void mix_columns(BYTE* state, unsigned int mode)
         out[i] = MULT_E(p_state[(0 + i) % 4]) ^ MULT_B(p_state[(1 + i) % 4]) ^ MULT_D(p_state[(2 + i) % 4]) ^ MULT_9(p_state[(3 + i) % 4]);
       }
       memcpy(p_state, out, 4);
-      p_state += 4; 
+      p_state += 4;
     }
   }
 }
@@ -273,7 +265,7 @@ BYTE xtime(BYTE byte)
 
 /***************************************************************/
 
-void display_state(BYTE* state, char *label)
+void display_state(BYTE *state, char *label)
 {
   int i;
 
@@ -284,5 +276,3 @@ void display_state(BYTE* state, char *label)
   }
   printf("\n");
 }
-
-
