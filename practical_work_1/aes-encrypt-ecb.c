@@ -5,7 +5,6 @@
 
 typedef unsigned char BYTE;
 void aes_encrypt(BYTE *cipher, BYTE *message, BYTE *key);
-void aes_decrypt(BYTE *message, BYTE *cipher, BYTE *key);
 
 int main(int argc, char const *argv[])
 {

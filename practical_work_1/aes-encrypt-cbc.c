@@ -10,7 +10,7 @@ typedef unsigned char BYTE;
 
 void aes_encrypt(BYTE *cipher, BYTE *message, BYTE *key);
 
-const char iv[16] = "profclavierM202a";
+const BYTE iv[16] = {0};
 char xor_key[16];
 
 void aes_encrypt_cbc_init()
