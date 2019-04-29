@@ -44,6 +44,13 @@ int main(int argc, char const *argv[])
 		{
 			break;
 		}
+		for (int i = 16 - buffer[15]; i < 16; i++)
+		{
+			if (buffer[i] != buffer[15])
+			{
+				break;
+			}
+		}
 		aes_decrypt(buffer_dec, buffer, K);
 		fwrite(buffer_dec, 1, 16, output);
 	}

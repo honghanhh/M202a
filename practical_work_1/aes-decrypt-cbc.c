@@ -72,6 +72,13 @@ int main(int argc, char const *argv[])
         {
             break;
         }
+        for (int i = 16 - buffer[15]; i < 16; i++)
+        {
+            if (buffer[i] != buffer[15])
+            {
+                break;
+            }
+        }
         aes_decrypt_cbc(buffer_enc, buffer, K);
         fwrite(buffer_enc, 1, 16, output);
     }

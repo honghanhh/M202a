@@ -72,6 +72,10 @@ int main(int argc, char const *argv[])
         {
             break;
         }
+        for (int i = len; i < 16; ++i)
+        {
+            buffer[i] = 16 - len;
+        }
         aes_encrypt_cbc(buffer_enc, buffer, K);
         fwrite(buffer_enc, 1, 16, output);
     }

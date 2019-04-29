@@ -3,16 +3,42 @@
 #include <stdlib.h>
 #include "aes.c"
 
+#define ENCRYPT 1
+#define DECRYPT 2
+
 typedef unsigned char BYTE;
+
 void aes_encrypt(BYTE *cipher, BYTE *message, BYTE *key);
+
+const BYTE iv[16] = {0};
+char xor_key[16];
+
+void aes_encrypt_cbc_init()
+{
+    memcpy(xor_key, iv, 16);
+}
+
+void aes_encrypt_cbc(BYTE *cipher, BYTE *message, BYTE *key)
+{
+    BYTE xor_mess[16];
+    //new message = message XOR key
+    for (int i = 0; i < 16; i++)
+    {
+        xor_mess[i] = message[i] ^ xor_key[i];
+    }
+    // Encrypted with new message
+    aes_encrypt(cipher, xor_mess, key);
+    // Save new message encrypted into xor_key
+    memcpy(xor_key, cipher, 16);
+}
 
 int main(int argc, char const *argv[])
 {
-    if (argc != 3)
+    if (argc != 2)
     {
         printf(
             "Invalid execution format. Use the following format\n"
-            "<executable code> <input file> <output file>\n");
+            "<executable code> <input file>\n");
         return -1;
     }
 
@@ -30,11 +56,7 @@ int main(int argc, char const *argv[])
         printf("Can't open the file %s\n", argv[1]);
         return -1;
     }
-    if (output == NULL)
-    {
-        printf("Can't open the file %s\n", argv[2]);
-        return -1;
-    }
+    aes_encrypt_cbc_init();
 
     while (1)
     {
@@ -44,15 +66,10 @@ int main(int argc, char const *argv[])
         {
             break;
         }
-        for (int i = len; i < 16; ++i)
-        {
-            buffer[i] = 16 - len;
-        }
-        aes_encrypt(buffer_enc, buffer, K);
+        aes_encrypt_cbc(buffer_enc, buffer, K);
         fwrite(buffer_enc, 1, 16, output);
     }
-    fclose(input);
-    fclose(output);
-    printf("Sucessful encrypted!\n");
+
+    printf("Sucessful!\n");
     return 0;
 }
