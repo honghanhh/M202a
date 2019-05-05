@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+// #include "aes.c"
 
 #define ENCRYPT 1
 #define DECRYPT 2
@@ -31,13 +32,45 @@ void aes_encrypt_cbc(BYTE *cipher, BYTE *message, BYTE *key)
     memcpy(xor_key, cipher, 16);
 }
 
+BYTE hex2byte(char *hex)
+{
+    BYTE value = 0;
+    for (int i = 0; i < 2; i++)
+    {
+        BYTE tmp = 0;
+        if ((hex[i] >= '0') && (hex[i] <= '9'))
+        {
+            tmp = hex[i] - '0';
+        }
+        else if ((hex[i] >= 'a') && (hex[i] <= 'f'))
+        {
+            tmp = hex[i] - 'a' + 10;
+        }
+        else if ((hex[i] >= 'A') && (hex[i] <= 'F'))
+        {
+            tmp = hex[i] - 'A' + 10;
+        }
+
+        if (i == 0)
+        {
+            value |= tmp << 4;
+        }
+        else
+        {
+            value |= tmp;
+        }
+    }
+
+    return value;
+}
+
 int main(int argc, char const *argv[])
 {
     if (argc != 3)
     {
         printf(
             "Invalid execution format. Use the following format\n"
-            "<executable code> <input file> <output file>\n");
+            "<executable code> <input file> <mac value>\n");
         return -1;
     }
 
@@ -48,19 +81,13 @@ int main(int argc, char const *argv[])
     BYTE buffer_enc[16];
 
     FILE *input = fopen(argv[1], "rb");
-    FILE *output = fopen(argv[2], "wb");
+    char *mac_value = (char *)argv[2];
 
     if (input == NULL)
     {
         printf("Can't open the file %s\n", argv[1]);
         return -1;
     }
-    if (output == NULL)
-    {
-        printf("Can't open the file %s\n", argv[2]);
-        return -1;
-    }
-
     aes_encrypt_cbc_init();
 
     while (1)
@@ -71,16 +98,18 @@ int main(int argc, char const *argv[])
         {
             break;
         }
-        for (int i = len; i < 16; ++i)
-        {
-            buffer[i] = 16 - len;
-        }
         aes_encrypt_cbc(buffer_enc, buffer, K);
-        fwrite(buffer_enc, 1, 16, output);
     }
+    int i;
+    for (i = 0; i < 16; i++)
+    {
+        if (buffer_enc[i] != hex2byte(&mac_value[i * 2]))
+        {
+            printf("Incorrect!\n");
+            return -1;
+        }
+    }
+    printf("Correct\n");
 
-    fclose(input);
-    fclose(output);
-    printf("Sucessful encrypted!\n");
     return 0;
 }

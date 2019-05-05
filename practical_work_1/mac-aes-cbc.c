@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "aes.c"
+// #include "aes.c"
 
 #define ENCRYPT 1
 #define DECRYPT 2
@@ -49,7 +49,6 @@ int main(int argc, char const *argv[])
     BYTE buffer_enc[16];
 
     FILE *input = fopen(argv[1], "rb");
-    FILE *output = fopen(argv[2], "wb");
 
     if (input == NULL)
     {
@@ -67,9 +66,14 @@ int main(int argc, char const *argv[])
             break;
         }
         aes_encrypt_cbc(buffer_enc, buffer, K);
-        fwrite(buffer_enc, 1, 16, output);
+        //fwrite(buffer_enc, 1, 16, output);
     }
+    int i;
+    for (i = 0; i < 16; i++)
+    {
+        printf("%02x", buffer_enc[i]);
+    }
+    printf("\n");
 
-    printf("Sucessful!\n");
     return 0;
 }

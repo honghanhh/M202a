@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "aes.c"
 
 typedef unsigned char BYTE;
 void aes_decrypt(BYTE *message, BYTE *cipher, BYTE *key);

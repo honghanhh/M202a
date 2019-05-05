@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "aes.c"
 
 #define ENCRYPT 1
 #define DECRYPT 2
@@ -88,3 +87,4 @@ int main(int argc, char const *argv[])
     printf("Sucessful decrypted!\n");
     return 0;
 }
+//gcc -Wall 1_key_gen.c -lgmp -o 1_key_gen
