@@ -84,7 +84,7 @@ int main(int argc, char const *argv[])
     mpz_powm(mp, h, dp, p);  // mp = h^dp mod p
     mpz_powm(mq, h, dq, q);  // mq = h^dq mod q
     mpz_sub(temp, mq, mp);   // temp = mq - mp;
-    mpz_mul(temp, temp, qi); // temp *= Ip;
+    mpz_mul(temp, temp, qi); // temp *= qi;
     mpz_mod(temp, temp, q);  // temp %= q;
     mpz_mul(temp, temp, p);  // temp *= p;
     mpz_add(s, mp, temp);    // m = mp + temp
